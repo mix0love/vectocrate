@@ -1200,6 +1200,7 @@
                 <div class="nav-item active" onclick="navigate('list')" id="nav-list">Demonlist</div>
                 <div class="nav-item" onclick="navigate('challenges')" id="nav-challenges">Challenges</div>
                 <div class="nav-item" onclick="navigate('pemonlist')" id="nav-pemonlist">Pemonlist</div>
+                <div class="nav-item" onclick="navigate('ill')" id="nav-ill">ILL</div>
                 <div class="nav-item" onclick="navigate('leaderboard')" id="nav-leaderboard">Leaderboard</div>
                 <div class="nav-item" onclick="navigate('staff')" id="nav-staff">Staff</div>
             </div>
@@ -1280,7 +1281,6 @@
                     <option value="challenge">Challenge</option>
                     <option value="pemonlist">Pemonlist</option>
                     <option value="ill">ILL</option>
-                    <option value="future">Future</option>
                 </select>
                 <button onclick="fullAddLevel()" class="btn btn-primary" style="width:100%">Create Level</button>
 
@@ -1537,7 +1537,6 @@
             else if (hash === 'challenges') { document.getElementById('nav-challenges').classList.add('active'); renderList('challenge'); }
             else if (hash === 'pemonlist') { document.getElementById('nav-pemonlist').classList.add('active'); renderList('pemonlist'); }
             else if (hash === 'ill') { document.getElementById('nav-ill').classList.add('active'); renderList('ill'); }
-            else if (hash === 'future') { renderList('future'); }
             else if (hash === 'leaderboard') { document.getElementById('nav-leaderboard').classList.add('active'); renderLeaderboard(); }
             else if (hash === 'staff') { document.getElementById('nav-staff').classList.add('active'); renderStaff(); }
             else if (hash.startsWith('profile=')) { renderProfile(decodeURIComponent(hash.split('=')[1])); }
@@ -1550,8 +1549,8 @@
             const app = document.getElementById('app');
 
             // Split Main vs Legacy
-            const main = cat === 'future' ? list : list.slice(0, 10);
-            const legacy = cat === 'future' ? [] : list.slice(10);
+            const main = list.slice(0, 10);
+            const legacy = list.slice(10);
 
             let html = `
             <div style="text-align:center; margin-bottom:40px; animation: fadeIn 0.5s">
