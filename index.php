@@ -19,6 +19,14 @@ $ADMIN_PASS       = "VECTA";
 // =============================
 
 $action = $_GET['action'] ?? '';
+// Fallback for Vercel rewrites or direct path access
+if (empty($action)) {
+    $path = explode('?', $_SERVER['REQUEST_URI'] ?? '')[0];
+    $parts = explode('/', trim($path, '/'));
+    if (end($parts) !== 'index.php') {
+        $action = end($parts);
+    }
+}
 $data = json_decode(file_get_contents("php://input"), true) ?: [];
 
 function fetchUpstash($cmd) {
