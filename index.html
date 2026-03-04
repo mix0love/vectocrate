@@ -2501,7 +2501,7 @@
             const l = db.levels.find(x => x.id === sub.lvlId);
             if (l) {
                 const statStr = isPem ? `⏱ Time: ${sub.time}` : `📊 ${sub.perc}%`;
-                const msg = `📝 <b>NEW RECORD</b>\n\n🏆 Level: ${l.name}\n👤 Player: ${sub.player}\n${statStr}\n🔗 ${sub.link}`;
+                const msg = `📝 <b>VECTO CRATE RECORD</b>\n\n🏆 Level: ${l.name}\n👤 Player: ${sub.player}\n${statStr}\n🔗 ${sub.link}`;
                 try {
                     const res = await fetch(`${API_URL}?action=submit`, {
                         method: 'POST',
