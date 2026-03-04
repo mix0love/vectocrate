@@ -1177,6 +1177,40 @@
             font-weight: 800;
         }
 
+        .wr-gold {
+            color: #facc15 !important;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.4);
+            font-weight: 900;
+            display: inline-block;
+            animation: wrPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes wrPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+                text-shadow: 0 0 25px rgba(250, 204, 21, 0.8);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .wr-box {
+            background: rgba(250, 204, 21, 0.1);
+            border: 1px solid rgba(250, 204, 21, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -1405,9 +1439,12 @@
 
             <input id="sub-name" class="input-std" placeholder="Username">
             <div class="input-group" id="grp-perc">
-                <input id="sub-perc" type="number" class="input-std" placeholder="Percentage (1-100)">
+                <input id="sub-perc" type="number" class="input-std" placeholder="Percentage (1-100)"
+                    oninput="updatePointsPreview()">
                 <div style="width:100px; display:flex; align-items:center; justify-content:center; opacity:0.5">%</div>
             </div>
+            <div id="sub-pts-preview" class="hidden"
+                style="font-size:0.8rem; color:var(--accent); margin-bottom:10px; text-align:center"></div>
             <input id="sub-time" class="input-std hidden" placeholder="Time (e.g. 01:23.45)">
             <input id="sub-link" class="input-std" placeholder="Video Link (YouTube)">
 
@@ -1562,6 +1599,9 @@
 
             const renderCard = (l, i, isLeg) => {
                 const img = l.img || 'https://wallpaperaccess.com/full/2565430.jpg';
+                const runs = l.runs || [];
+                const wr = runs.length > 0 ? [...runs].sort((a, b) => b.percent - a.percent)[0] : null;
+
                 return `
                 <div class="lvl-card" onclick="openLevel(${l.id})">
                     <div class="lvl-rank" style="${isLeg ? 'background:rgba(255,255,255,0.05)' : ''}">${isLeg ? '' : '#' + (i + 1)}</div>
@@ -1571,7 +1611,9 @@
                         <div class="lvl-meta">
                             <span class="meta-tag"><i class="fa-solid fa-user"></i> ${l.creator || '?'}</span>
                             <span class="meta-tag"><i class="fa-solid fa-database"></i> ${l.gd_id || '?'}</span>
+                            ${l.fps ? `<span class="meta-tag" style="color:var(--accent)"><i class="fa-solid fa-microchip"></i> ${l.fps} FPS</span>` : ''}
                         </div>
+                        ${wr ? `<div style="font-size:0.8rem; margin-top:10px; display:flex; gap:8px; align-items:center"><i class="fa-solid fa-crown wr-gold"></i> <span class="wr-gold">WR: ${wr.percent}%</span> <span style="opacity:0.6">by ${wr.name}</span></div>` : ''}
                         <div class="lvl-pts">
                             <div class="pts-val" style="font-size:${isLeg ? '1.5rem' : '2.5rem'}">${isLeg ? 'LEGACY' : l.pts}</div>
                             <div class="pts-lbl">${isLeg ? '' : 'POINTS'}</div>
@@ -2023,27 +2065,41 @@
                      </div>`}
                 </div>
 
-                <div style="background:rgba(245,158,11,0.1); border-left:4px solid var(--verifier); padding:15px; margin-bottom:20px; border-radius:0 8px 8px 0">
+                <div style="background:rgba(245,158,11,0.1); border-left:4px solid var(--verifier); padding:15px; margin-bottom:10px; border-radius:0 8px 8px 0">
                     <span style="color:var(--verifier); font-weight:800; letter-spacing:1px">VERIFIER:</span> 
                     <span onclick="navigate('profile=${l.ver}')" style="cursor:pointer; text-decoration:underline; margin-left:10px; font-weight:700; font-size:1.1rem">${l.ver}</span>
                 </div>
 
+                ${(() => {
+                    const runs = l.runs || [];
+                    if (runs.length === 0) return '';
+                    const wr = [...runs].sort((a, b) => b.percent - a.percent)[0];
+                    return `
+                        <div class="wr-box">
+                            <div>
+                                <div style="font-size:0.7rem; color:#facc15; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px">World Record</div>
+                                <div style="font-weight:700; font-size:1.1rem; cursor:pointer" onclick="navigate('profile=${wr.name}')"><i class="fa-solid fa-crown" style="color:#facc15"></i> ${wr.name}</div>
+                            </div>
+                            <div class="wr-gold" style="font-size:1.8rem">${wr.percent}%</div>
+                        </div>`;
+                })()}
+
                 <h3 style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px">Victors (${l.victors.length})</h3>
                 <div style="max-height:200px; overflow-y:auto; padding-right:5px">
                     ${l.victors.sort((a, b) => l.cat === 'pemonlist' ? (a.time || '').localeCompare(b.time || '') : 0).map(v => {
-                const name = typeof v === 'object' ? v.name : v;
-                const time = typeof v === 'object' ? v.time : null;
-                const u = db.users.find(x => x.username === name) || {};
-                const p = db.players ? db.players[name] : {};
-                const flag = u.country || p?.flag || '';
-                return `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer; display:flex; justify-content:space-between; align-items:center" onclick="navigate('profile=${name}')">
+                    const name = typeof v === 'object' ? v.name : v;
+                    const time = typeof v === 'object' ? v.time : null;
+                    const u = db.users.find(x => x.username === name) || {};
+                    const p = db.players ? db.players[name] : {};
+                    const flag = u.country || p?.flag || '';
+                    return `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer; display:flex; justify-content:space-between; align-items:center" onclick="navigate('profile=${name}')">
                             <div><span style="font-size:1.2rem; margin-right:10px">${getFlagHtml(flag)}</span> <b>${name}</b></div>
                             <div style="display:flex; align-items:center; gap:10px">
                                 ${time ? `<span style="font-family:monospace; opacity:0.8">${time}</span>` : ''}
                                 ${isAdmin ? `<button onclick="event.stopPropagation(); deleteVictor(${l.id}, '${name}')" class="btn btn-danger" style="padding:2px 8px; font-size:0.6rem"><i class="fa-solid fa-trash"></i></button>` : ''}
                             </div>
                         </div>`;
-            }).join('')}
+                }).join('')}
                 </div>
                 
                 ${isAdmin ? `<div style="margin-top:20px; display:flex; gap:10px">
@@ -2482,6 +2538,23 @@
             const isPem = cat === 'pemonlist';
             document.getElementById('grp-perc').classList.toggle('hidden', isPem);
             document.getElementById('sub-time').classList.toggle('hidden', !isPem);
+            updatePointsPreview();
+        }
+
+        function updatePointsPreview() {
+            const cat = document.getElementById('sub-cat').value;
+            const perc = parseInt(document.getElementById('sub-perc').value) || 0;
+            const lvlId = parseInt(document.getElementById('sub-lvl').value);
+            const l = db.levels.find(x => x.id === lvlId);
+            const preview = document.getElementById('sub-pts-preview');
+            if (!preview) return;
+            if (cat === 'ill' && l && perc > 0) {
+                const pts = (l.pts * perc / 100).toFixed(1);
+                preview.innerHTML = `You will earn <b style="color:#facc15">${pts}</b> points`;
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
         }
         async function submitRecord() {
             const cat = document.getElementById('sub-cat').value;
