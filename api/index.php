@@ -11,14 +11,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // === КОНФИГУРАЦИЯ СЕКРЕТОВ ===
 $UPSTASH_REST_URL = "https://climbing-ringtail-53718.upstash.io";
 $UPSTASH_TOKEN    = "AdHWAAIncDI0NDhiMjMzMjcxYzA0ZjgxOTNkZDZkMmQwY2JjYWZjM3AyNTM3MTg";
-$NEWS_BOT_TOKEN   = "8159288191:AAFbE7abXBp4PiVB8HFPmXo8RllpORjYZVo";
-$NEWS_CHANNEL_ID  = "-1003594549900";
-$RECORDS_BOT_TOKEN = "8509244045:AAHF5UjdLnUyYbEW-SGLiSX44W55LMj6dVs";
-$RECORDS_CHAT_ID  = "-1003565793982";
+$NEWS_BOT_TOKEN   = "";
+$NEWS_CHANNEL_ID  = "";
+$RECORDS_BOT_TOKEN = "";
+$RECORDS_CHAT_ID  = "";
 $ADMIN_PASS       = "VECTA";
 // =============================
 
 $action = $_GET['action'] ?? '';
+// Fallback for Vercel rewrites or direct path access
+if (empty($action)) {
+    $path = explode('?', $_SERVER['REQUEST_URI'] ?? '')[0];
+    $parts = explode('/', trim($path, '/'));
+    if (end($parts) !== 'index.php') {
+        $action = end($parts);
+    }
+}
 $data = json_decode(file_get_contents("php://input"), true) ?: [];
 
 function fetchUpstash($cmd) {
@@ -37,6 +45,7 @@ function fetchUpstash($cmd) {
 }
 
 function sendTelegram($bot, $chat, $text) {
+    if (!$bot || !$chat) return json_encode(['ok' => true, 'description' => 'Bots disabled by admin']);
     $url = "https://api.telegram.org/bot$bot/sendMessage";
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
